@@ -9,6 +9,10 @@ def next_magic_num(n: str) -> str:
         for i in range(l // 2):
             arr[l - 1 - i] = arr[i]
         return arr
+    
+    mirrored = mirror(s.copy())
+    if "".join(mirrored) > n:
+        return "".join(mirrored)
 
 def main():
     data = Path("input.txt").read_text(encoding="utf-8")
