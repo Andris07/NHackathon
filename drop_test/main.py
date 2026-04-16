@@ -11,7 +11,14 @@ def min_height_when_it_breaks(tries: int, H: int) -> int:
     return max_H
 
 def min_num_of_drops(N: int, H: int) -> int:
-    return
+    if (H == 0):
+        return 0
+    elif (N == 1):
+        return H
+
+    K = 0
+
+    return K
 
 def main():
     # data = Path("input.txt").read_text(encoding="utf-8")
@@ -20,8 +27,9 @@ def main():
     data = (BASE_DIR / "input.txt").read_text(encoding="utf-8")
 
     data = data.splitlines();
-    print("\n".join(data))
-    print(min_height_when_it_breaks(14, 100))
+    for line in data:
+        N, H = line.split(",")
+        print(min_num_of_drops(int(N), int(H)))
 
 if __name__ == "__main__":
     main()
