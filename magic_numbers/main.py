@@ -13,6 +13,16 @@ def next_magic_num(n: str) -> str:
     mirrored = mirror(s.copy())
     if "".join(mirrored) > n:
         return "".join(mirrored)
+    
+    carry = 1
+    mid = (length - 1) // 2
+
+    i = mid
+    while i >= 0 and carry:
+        new = int(s[i]) + carry
+        carry = new // 10
+        s[i] = str(new % 10)
+        i -= 1
 
 def main():
     data = Path("input.txt").read_text(encoding="utf-8")
