@@ -15,8 +15,8 @@ def convert_to_minutes(seconds: int) -> int:
 def convert_to_hours(seconds: int) -> int:
     return seconds // (60 * 60)
 
-def remainder(seconds: int) -> int:
-    return seconds % 60
+def remainder(seconds: int, base: int) -> int:
+    return seconds % base
 
 
 
