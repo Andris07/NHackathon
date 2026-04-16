@@ -33,6 +33,9 @@ def breakdown(seconds: int):
 def parking_fee(START: str, END: str) -> int:
     seconds = convert_to_total_seconds(START, END)
 
+    if seconds < 0:
+        return -1
+
     if seconds <= MINUTE * 30:
         return 0
 
@@ -46,7 +49,18 @@ def main():
 
     BASE_DIR = Path(__file__).resolve().parent
     data = (BASE_DIR / "input.txt").read_text(encoding="utf-8")
-    print(parking_fee("2026-03-30 07:00:00", "2026-03-30 07:30:00"))
+    
+    data = data.splitlines()
+    for line in data[2:]:
+        parts = line.split()
+        license_plate = parts[0]
+        start = parts[1] + " " + parts[2]
+        end = parts[3] + " " + parts[4]
+
+        if parking_fee(start, end) == -1:
+            print("A kilépési idő előbb volt, mint a belépési idő.")
+        
+        print(parking_fee(start, end))
 
 if __name__ == "__main__":
     main()
