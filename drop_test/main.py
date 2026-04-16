@@ -18,6 +18,16 @@ def min_num_of_drops(N: int, H: int) -> int:
 
     K = 0
 
+    # feltöltünk egy listát minden egyes leejtett eszköz "hibahatárával", vagyis azt az értéket, ahol még nem törik, és használható marad az eszköz
+    drops = [0] * (N + 1)
+
+    while drops[N] < H + 1:
+        K += 1
+
+        # frissítjük a listát a sikeres leejtések alapján
+        for n in range(N, 0, -1):
+            drops[n] = drops[n] + drops[n - 1] + 1
+
     return K
 
 def main():
