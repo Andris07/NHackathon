@@ -2,6 +2,9 @@ from pathlib import Path
 
 from datetime import datetime
 
+hours = 3600
+minutes = 60
+
 def convert_to_total_seconds(START: str, END: str) -> int:
     START_date = datetime.strptime(START, "%Y-%m-%d %H:%M:%S")
     END_date = datetime.strptime(END, "%Y-%m-%d %H:%M:%S")
@@ -9,21 +12,23 @@ def convert_to_total_seconds(START: str, END: str) -> int:
 
     return seconds
 
-def convert_to_minutes(seconds: int) -> int:
-    return seconds // 60
-
 def convert_to_hours(seconds: int) -> int:
-    return seconds // (60 * 60)
+    return seconds // hours
+
+def convert_to_minutes(seconds: int) -> int:
+    return seconds // minutes
 
 def remainder(seconds: int, base: int) -> int:
     return seconds % base
 
-
+def breakdown(seconds: int):
+    hours = convert_to_hours(seconds)
+    remainder_after_hours = remainder(seconds, hours)
 
 def parking_fee(START: str, END: str) -> int:
     seconds = convert_to_total_seconds(START, END)
 
-    if seconds <= 60 * 30:
+    if seconds <= minutes * 30:
         return 0
 
     return seconds
