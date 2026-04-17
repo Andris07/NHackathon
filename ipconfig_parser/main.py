@@ -31,7 +31,7 @@ def parse_devices_from_file(file: str):
             devices[current_device] = {}
             continue
 
-        # creating dictionaries for the device's properties and its values
+        # creating dictionaries for the device's properties and its key-value pairs
         if ":" in line and current_device:
             key, value = line.split(":", 1)
             key = key.strip().replace(".", "")
@@ -41,6 +41,16 @@ def parse_devices_from_file(file: str):
 
     return devices
 
+def console_print(data):
+    for device, properties in data.items():
+        print(f"\n{device}")
+        print("-" * len(device))
+
+        width = max(len(k) for k in properties)
+
+        for k, v in properties.items():
+            print(f"{k:<{width}} │ {v}")
+
 def main():
     BASE_DIR = Path(__file__).resolve().parent
 
@@ -48,11 +58,12 @@ def main():
 
     for file in files:
         enc = encode_any_file(file)
+        data = file.read_text(encoding="utf-8", errors="replace")
 
         print(f"{file.name} -> {enc}")
 
-        text = file.read_text(encoding="utf-8", errors="replace")
-        print(text)
+        devices = parse_devices_from_file(data)
+        console_print(devices)
 
 if __name__ == "__main__":
     main()
