@@ -18,6 +18,29 @@ def encode_any_file(path: Path, target: str = "utf-8"):
 def get_txt_files(base_dir: Path):
     return list(base_dir.rglob("*.txt"))
 
+def parse_devices_from_file(file: str):
+    devices = {}
+    current_device = None
+
+    for line in file.splitlines():
+        line = line.strip()
+
+        # searching for a device
+        if line.endswith(":") and "adapter" in line.lower():
+            current_device = line[:-1]
+            devices[current_device] = {}
+            continue
+
+        # creating dictionaries for the device's properties and its values
+        if ":" in line and current_device:
+            key, value = line.split(":", 1)
+            key = key.strip().replace(".", "")
+            value = value.strip()
+
+            devices[current_device][key] = value
+
+    return devices
+
 def main():
     BASE_DIR = Path(__file__).resolve().parent
 
