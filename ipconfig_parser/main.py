@@ -5,61 +5,76 @@ import json
 sys.stdout.reconfigure(encoding="utf-8")
 ENCODINGS = ["utf-8-sig","utf-8","utf-16","utf-16-le","utf-16-be","cp1250","cp1251","cp1252","cp1254","latin-1","iso-8859-2","iso-8859-1","iso-8859-15","cp850","cp852","cp437","mac_roman","koi8-r","shift_jis","gbk","utf-32"] # most common encodings
 
-def encode_any_file(path: Path, target: str = "utf-8"):
+def read_file_safely(path: Path) -> str:
     for enc in ENCODINGS:
         try:
-            text = path.read_text(encoding=enc).replace("\ufeff", "")
-            path.write_text(text, encoding=target)
-            return enc
-        except UnicodeDecodeError:
-            pass
-
-    raise ValueError("Decode failed!")
+            return path.read_text(encoding=enc)
+        except (UnicodeDecodeError, LookupError):
+            continue
+    return path.read_text(encoding="utf-8", errors="replace")
 
 def get_txt_files(base_dir: Path):
     return list(base_dir.rglob("*.txt"))
 
 def normalize_key(key: str) -> str:
     key = key.lower().strip()
+    key = key.split(".")[0].strip()
+    key = " ".join(key.split())
 
-    mapping =   {
-                "physical address": "physical_address",
-                "ipv4 address": "ipv4_address",
-                "subnet mask": "subnet_mask",
-                "default gateway": "default_gateway",
-                "dhcp enabled": "dhcp_enabled",
-                "dns servers": "dns_servers",
-                "description": "description",
-                "connection-specific dns suffix": "dns_suffix",
-                "autoconfiguration ipv4 address": "ipv4_address",
-                }
+    mapping =                   {
+                                "physical address": "physical_address",
+                                "ipv4 address": "ipv4_address",
+                                "autoconfiguration ipv4 address": "ipv4_address",
 
-    return mapping.get(key, key.replace(" ", "_"))
+                                "ipv6 address": "ipv6_address",
+                                "temporary ipv6 address": "ipv6_temporary",
+                                "link-local ipv6 address": "ipv6_link_local",
+
+                                "subnet mask": "subnet_mask",
+                                "default gateway": "default_gateway",
+                                "dhcp enabled": "dhcp_enabled",
+
+                                "dns servers": "dns_servers",
+                                "connection-specific dns suffix": "dns_suffix",
+                                "dns suffix search list": "dns_search_list",
+
+                                "description": "description",
+                                }
+    return mapping.get(key.strip(), key.strip().replace(" ", "_"))
 
 def parse_devices_from_file(file: str):
     devices = []
     current_device = None
-    collecting_dns = False
+    current_key = None
+
+    ipv6_keys =                 {
+                                "ipv6 address": "ipv6_address",
+                                "temporary ipv6 address": "ipv6_temporary",
+                                "link-local ipv6 address": "ipv6_link_local"
+                                }
 
     for line in file.splitlines():
         line = line.strip()
 
         # new adapter
         if line.endswith(":") and "adapter" in line.lower():
-            current_device =   {
+            current_device =    {
                                 "adapter_name": line[:-1],
                                 "description": "",
                                 "physical_address": "",
                                 "dhcp_enabled": "",
                                 "ipv4_address": "",
                                 "ipv6_address": "",
+                                "ipv6_temporary": "",
+                                "ipv6_link_local": "",
                                 "subnet_mask": "",
-                                "default_gateway": "",
-                                "dns_servers": []
+                                "default_gateway": [],
+                                "dns_servers": [],
+                                "dns_suffix": "",
+                                "dns_search_list": "",
                                 }
-            
             devices.append(current_device)
-            collecting_dns = False
+            current_key = None
             continue
 
         if not current_device:
@@ -68,43 +83,74 @@ def parse_devices_from_file(file: str):
         # adapter key-value pairs
         if ":" in line:
             key, value = line.split(":", 1)
-            key = key.strip().lower()
+            key = normalize_key(key)
             value = value.strip()
+            current_key = key
 
-            collecting_dns = False
+            # IPv6 types
+            if key in ipv6_keys:
+                current_device[ipv6_keys[key]] = value.split("(")[0].strip()
+                continue
 
+            # description
             if "description" in key:
                 current_device["description"] = value
+                continue
 
-            elif "physical address" in key:
+            # physical address
+            if "physical_address" in key:
                 current_device["physical_address"] = value
+                continue
 
-            elif "dhcp enabled" in key:
+            # dhcp enabled
+            if "dhcp_enabled" in key:
                 current_device["dhcp_enabled"] = value
+                continue
 
-            elif "ipv4 address" in key:
+            # ipv4
+            if key == "ipv4_address":
                 current_device["ipv4_address"] = value.split("(")[0].strip()
+                continue
 
-            elif "ipv6 address" in key:
-                current_device["ipv6_address"] = value.split("(")[0].strip()
-
-            elif "subnet mask" in key:
+            # subnet mask
+            if key == "subnet_mask":
                 current_device["subnet_mask"] = value
+                continue
 
-            elif "default gateway" in key:
-                current_device["default_gateway"] = value
+            # dns suffix
+            if key == "dns_suffix":
+                current_device["dns_suffix"] = value
+                continue
 
-            elif "dns servers" in key:
-                current_device["dns_servers"] = []
+            # dns search list
+            if key == "dns_search_list":
+                current_device["dns_search_list"] = value
+                continue
 
+            # default gateway
+            if key == "default_gateway":
+                if value and value not in ("127.0.0.1", "::1"):
+                    current_device["default_gateway"].append(value)
+                continue
+
+            # dns servers
+            if key == "dns_servers":
                 if value:
                     current_device["dns_servers"].append(value)
-                collecting_dns = True
-            
+                continue
+
             continue
 
-        if collecting_dns and line:
-            current_device["dns_servers"].append(line)
+        # multiline values (default_gateway, dns_servers)
+        if current_key and line:
+            if current_key == "default_gateway":
+                if line not in ("127.0.0.1", "::1"):
+                    current_device["default_gateway"].append(line)
+                continue
+
+            elif current_key == "dns_servers":
+                current_device["dns_servers"].append(line)
+                continue
 
     return devices
 
@@ -126,15 +172,14 @@ def export_to_json(file: Path, adapters):
 
 def main():
     BASE_DIR = Path(__file__).resolve().parent
-
     files = get_txt_files(BASE_DIR)
     results = []
 
     for file in files:
-        enc = encode_any_file(file)
-        data = file.read_text(encoding="utf-8", errors="replace")
+        data = read_file_safely(file)
 
         adapters = parse_devices_from_file(data)
+
         results.append(export_to_json(file, adapters))
 
         print(f"{file.name}")
