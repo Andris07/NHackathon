@@ -42,6 +42,25 @@ def normalize_key(key: str) -> str:
                                 }
     return mapping.get(key.strip(), key.strip().replace(" ", "_"))
 
+ADAPTER_KEY_ORDER =             [
+                                "adapter_name",
+                                "description",
+                                "physical_address",
+                                "dhcp_enabled",
+                                "ipv4_address",
+                                "ipv6_address",
+                                "ipv6_temporary",
+                                "ipv6_link_local",
+                                "subnet_mask",
+                                "default_gateway",
+                                "dns_servers",
+                                "dns_suffix",
+                                "dns_search_list",
+                                ]
+
+def sort_adapter_fields(adapter: dict) -> dict:
+    return {key: adapter.get(key, "") for key in ADAPTER_KEY_ORDER}
+
 def parse_devices_from_file(file: str):
     devices = []
     current_device = None
@@ -165,10 +184,8 @@ def console_print(devices):
             print(f"{k:<20} │ {v}")
 
 def export_to_json(file: Path, adapters):
-    return  {
-            "file_name": file.name,
-            "adapters": adapters
-            }
+    sorted_adapters = [sort_adapter_fields(a) for a in adapters]
+    return { "file_name": file.name, "adapters": sorted_adapters}
 
 def main():
     BASE_DIR = Path(__file__).resolve().parent
