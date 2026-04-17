@@ -1,5 +1,6 @@
 from pathlib import Path
 import sys
+import json
 
 sys.stdout.reconfigure(encoding="utf-8")
 ENCODINGS = ["utf-8-sig","utf-8","utf-16","utf-16-le","utf-16-be","cp1250","cp1251","cp1252","cp1254","latin-1","iso-8859-2","iso-8859-1","iso-8859-15","cp850","cp852","cp437","mac_roman","koi8-r","shift_jis","gbk","utf-32"] # most common encodings
@@ -63,6 +64,13 @@ def parse_devices_from_file(file: str):
                 current_device["dns_servers"] = [v.strip() for v in value.split() if v]
 
     return devices
+
+def export_to_json(file: Path, adapters):
+    return
+    {
+        "file_name": file.name,
+        "adapters": adapters
+    }
 
 def console_print(data):
     for device, properties in data.items():
