@@ -20,7 +20,7 @@ def get_txt_files(base_dir: Path):
     return list(base_dir.rglob("*.txt"))
 
 def parse_devices_from_file(file: str):
-    devices = {}
+    devices = []
     current_device = None
 
     for line in file.splitlines():
@@ -65,36 +65,40 @@ def parse_devices_from_file(file: str):
 
     return devices
 
+def console_print(devices):
+    for device in devices:
+        print(f"\n{device['adapter_name']}")
+        print("-" * len(device["adapter_name"]))
+
+        for k, v in device.items():
+            if k == "adapter_name":
+                continue
+            print(f"{k:<20} │ {v}")
+
 def export_to_json(file: Path, adapters):
-    return
-    {
-        "file_name": file.name,
-        "adapters": adapters
-    }
-
-def console_print(data):
-    for device, properties in data.items():
-        print(f"\n{device}")
-        print("-" * len(device))
-
-        width = max(len(k) for k in properties)
-
-        for k, v in properties.items():
-            print(f"{k:<{width}} │ {v}")
+    return  {
+            "file_name": file.name,
+            "adapters": adapters
+            }
 
 def main():
     BASE_DIR = Path(__file__).resolve().parent
 
     files = get_txt_files(BASE_DIR)
+    results = []
 
     for file in files:
         enc = encode_any_file(file)
         data = file.read_text(encoding="utf-8", errors="replace")
 
-        print(f"{file.name} -> {enc}")
+        adapters = parse_devices_from_file(data)
+        results.append(export_to_json(file, adapters))
 
-        devices = parse_devices_from_file(data)
-        console_print(devices)
+        print(f"{file.name}")
+        console_print(adapters)
+
+    with open(BASE_DIR / "adapters.json", "w", encoding="utf-8") as f:
+        json.dump(results, f, indent=4, ensure_ascii=False)
 
 if __name__ == "__main__":
     main()
