@@ -25,19 +25,42 @@ def parse_devices_from_file(file: str):
     for line in file.splitlines():
         line = line.strip()
 
-        # searching for a device
+        # adapter
         if line.endswith(":") and "adapter" in line.lower():
-            current_device = line[:-1]
-            devices[current_device] = {}
+            current_device =    {
+                                "adapter_name": line[:-1],
+                                "description": "",
+                                "physical_address": "",
+                                "dhcp_enabled": "",
+                                "ipv4_address": "",
+                                "subnet_mask": "",
+                                "default_gateway": "",
+                                "dns_servers": "",
+                                }
+            devices.append(current_device)
             continue
 
-        # creating dictionaries for the device's properties and its key-value pairs
+        # adapter details
         if ":" in line and current_device:
             key, value = line.split(":", 1)
-            key = key.strip().replace(".", "")
+            key = key.strip().lower()
             value = value.strip()
 
-            devices[current_device][key] = value
+            # mapping ipconfig keys
+            if "description" in key:
+                current_device["description"] = value
+            elif "physical address" in key:
+                current_device["physical_address"] = value
+            elif "dhcp enabled" in key:
+                current_device["dhcp_enabled"] = value
+            elif "ipv4 address" in key:
+                current_device["ipv4_address"] = value.split("(")[0].strip()
+            elif "subnet mask" in key:
+                current_device["subnet_mask"] = value
+            elif "default gateway" in key:
+                current_device["default_gateway"] = value
+            elif "dns servers" in key:
+                current_device["dns_servers"] = [v.strip() for v in value.split() if v]
 
     return devices
 
