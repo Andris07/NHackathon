@@ -19,49 +19,92 @@ def encode_any_file(path: Path, target: str = "utf-8"):
 def get_txt_files(base_dir: Path):
     return list(base_dir.rglob("*.txt"))
 
+def normalize_key(key: str) -> str:
+    key = key.lower().strip()
+
+    mapping =   {
+                "physical address": "physical_address",
+                "ipv4 address": "ipv4_address",
+                "subnet mask": "subnet_mask",
+                "default gateway": "default_gateway",
+                "dhcp enabled": "dhcp_enabled",
+                "dns servers": "dns_servers",
+                "description": "description",
+                "connection-specific dns suffix": "dns_suffix",
+                "autoconfiguration ipv4 address": "ipv4_address",
+                }
+
+    return mapping.get(key, key.replace(" ", "_"))
+
 def parse_devices_from_file(file: str):
     devices = []
     current_device = None
+    collecting_dns = False
 
     for line in file.splitlines():
         line = line.strip()
 
-        # adapter
+        # new adapter
         if line.endswith(":") and "adapter" in line.lower():
-            current_device =    {
+            current_device =   {
                                 "adapter_name": line[:-1],
                                 "description": "",
                                 "physical_address": "",
                                 "dhcp_enabled": "",
                                 "ipv4_address": "",
+                                "ipv6_address": "",
                                 "subnet_mask": "",
                                 "default_gateway": "",
-                                "dns_servers": "",
+                                "dns_servers": []
                                 }
+            
             devices.append(current_device)
+            collecting_dns = False
             continue
 
-        # adapter details
-        if ":" in line and current_device:
+        if not current_device:
+            continue
+
+        # adapter key-value pairs
+        if ":" in line:
             key, value = line.split(":", 1)
             key = key.strip().lower()
             value = value.strip()
 
-            # mapping ipconfig keys
+            collecting_dns = False
+
             if "description" in key:
                 current_device["description"] = value
+
             elif "physical address" in key:
                 current_device["physical_address"] = value
+
             elif "dhcp enabled" in key:
                 current_device["dhcp_enabled"] = value
+
             elif "ipv4 address" in key:
                 current_device["ipv4_address"] = value.split("(")[0].strip()
+
+            elif "ipv6 address" in key:
+                current_device["ipv6_address"] = value.split("(")[0].strip()
+
             elif "subnet mask" in key:
                 current_device["subnet_mask"] = value
+
             elif "default gateway" in key:
                 current_device["default_gateway"] = value
+
             elif "dns servers" in key:
-                current_device["dns_servers"] = [v.strip() for v in value.split() if v]
+                current_device["dns_servers"] = []
+
+                if value:
+                    current_device["dns_servers"].append(value)
+                collecting_dns = True
+            
+            continue
+
+        if collecting_dns and line:
+            current_device["dns_servers"].append(line)
 
     return devices
 
