@@ -1,6 +1,9 @@
 from pathlib import Path
 from datetime import datetime
 
+from os import sys
+sys.stdout.reconfigure(encoding='utf-8')
+
 DAY = 86400
 HOUR = 3600
 MINUTE = 60
@@ -40,6 +43,7 @@ def main():
     
     with open("fees.txt", "w", encoding="utf-8") as f:
         f.write("RENDSZÁM\tDÍJ\n")
+        print("RENDSZÁM\tDÍJ")
         
         for line in data.splitlines()[2:]:
             parts = line.split()
