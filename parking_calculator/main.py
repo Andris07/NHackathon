@@ -45,7 +45,7 @@ def main():
     BASE_DIR = Path(__file__).resolve().parent
     data = (BASE_DIR / "input.txt").read_text(encoding="utf-8")
     
-    with open("fees.txt", "w", encoding="utf-8") as f:
+    with open(BASE_DIR / "fees.txt", "w", encoding="utf-8") as f:
         f.write("RENDSZÁM\tDÍJ\n")
         print("RENDSZÁM\tDÍJ")
         
