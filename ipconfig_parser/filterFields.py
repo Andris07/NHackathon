@@ -1,4 +1,4 @@
-from config import IMPORTANT_FIELDS
+from config import IMPORTANT_FIELDS, LIST_FIELDS
 
 def filter_adapter(adapter: dict) -> dict:
     filtered = {}
@@ -6,7 +6,7 @@ def filter_adapter(adapter: dict) -> dict:
     for key in IMPORTANT_FIELDS:
         value = adapter.get(key, "")
 
-        if key in ("default_gateway", "dns_servers"):
+        if key in LIST_FIELDS:
             filtered[key] = value if isinstance(value, list) else []
         else:
             filtered[key] = value if value else ""

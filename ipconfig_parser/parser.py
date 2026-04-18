@@ -28,7 +28,7 @@ def _create_adapter(adapter_name: str) -> dict:
                 "ipv6_link_local": "",
 
                 "subnet_mask": "",
-                "default_gateway": [],
+                "default_gateway": "",
 
                 "dhcp_server": "",
 

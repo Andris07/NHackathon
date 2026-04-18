@@ -53,5 +53,5 @@ ADAPTER_MAPPING: Final =    {
 
 IMPORTANT_FIELDS: Final =["adapter_name","description","physical_address","dhcp_enabled","ipv4_address","subnet_mask","default_gateway","dns_servers",]
 
-LIST_FIELDS: Final =    {"default_gateway","dns_servers",}
+LIST_FIELDS: Final =    {"dns_servers",}
 BAD_GATEWAYS: Final =   {"127.0.0.1","192.168.0.1","::1",}
