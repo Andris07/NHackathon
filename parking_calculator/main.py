@@ -46,8 +46,8 @@ def main():
     data = (BASE_DIR / "input.txt").read_text(encoding="utf-8")
     
     with open(BASE_DIR / "fees.txt", "w", encoding="utf-8") as f:
-        f.write("RENDSZÁM\tDÍJ\n")
-        print("RENDSZÁM\tDÍJ")
+        f.write("RENDSZAM\tDIJ\n")
+        print("RENDSZAM\tDIJ")
         
         for line in data.splitlines()[2:]:
             parts = line.split()
