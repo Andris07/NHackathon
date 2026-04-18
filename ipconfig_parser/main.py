@@ -4,6 +4,7 @@ import json
 
 from config import ENCODINGS
 from parser import parse_devices_from_file
+from filterFields import filter_adapter, filter_host
 
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -32,9 +33,12 @@ def main():
         file_content = read_file_safely(file)
         parsed = parse_devices_from_file(file_content)
 
-        data.append({"file_name": file.name, "host": parsed["host"], "adapters": parsed["adapters"]})
+        filtered_adapters = [filter_adapter(a) for a in parsed["adapters"]]
+        filtered_host = filter_host(parsed["host"])
 
-    output_file = BASE_DIR / "adapters.json"
+        data.append({"file_name": file.name, "host": filtered_host, "adapters": filtered_adapters})
+
+    output_file = BASE_DIR / "devices.json"
     export_to_json(data, output_file)
 
     print(json.dumps(data, indent=4, ensure_ascii=False))

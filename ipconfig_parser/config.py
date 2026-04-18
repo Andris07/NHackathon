@@ -51,5 +51,7 @@ ADAPTER_MAPPING: Final =    {
                             "autoconfiguration enabled": "autoconfiguration_enabled",
                         }
 
+IMPORTANT_FIELDS: Final =["adapter_name","description","physical_address","dhcp_enabled","ipv4_address","subnet_mask","default_gateway","dns_servers",]
+
 LIST_FIELDS: Final =    {"default_gateway","dns_servers",}
 BAD_GATEWAYS: Final =   {"127.0.0.1", "::1",}
