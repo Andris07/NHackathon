@@ -40,7 +40,7 @@ def normalize_key(key: str) -> str:
 
                                 "description": "description",
                                 }
-    return mapping.get(key.strip(), key.strip().replace(" ", "_"))
+    return mapping.get(key, key.replace(" ", "_"))
 
 ADAPTER_KEY_ORDER =             [
                                 "adapter_name",
@@ -59,18 +59,12 @@ ADAPTER_KEY_ORDER =             [
                                 ]
 
 def sort_adapter_fields(adapter: dict) -> dict:
-    return {key: adapter.get(key, "") for key in ADAPTER_KEY_ORDER}
+    return {key: adapter[key] for key in ADAPTER_KEY_ORDER}
 
 def parse_devices_from_file(file: str):
     devices = []
     current_device = None
     current_key = None
-
-    ipv6_keys =                 {
-                                "ipv6 address": "ipv6_address",
-                                "temporary ipv6 address": "ipv6_temporary",
-                                "link-local ipv6 address": "ipv6_link_local"
-                                }
 
     for line in file.splitlines():
         line = line.strip()
@@ -107,22 +101,22 @@ def parse_devices_from_file(file: str):
             current_key = key
 
             # IPv6 types
-            if key in ipv6_keys:
-                current_device[ipv6_keys[key]] = value.split("(")[0].strip()
+            if key.startswith("ipv6_"):
+                current_device[key] = value.split("(")[0].strip()
                 continue
 
             # description
-            if "description" in key:
+            if key == "description":
                 current_device["description"] = value
                 continue
 
             # physical address
-            if "physical_address" in key:
+            if key == "physical_address":
                 current_device["physical_address"] = value
                 continue
 
             # dhcp enabled
-            if "dhcp_enabled" in key:
+            if key == "dhcp_enabled":
                 current_device["dhcp_enabled"] = value
                 continue
 
