@@ -52,3 +52,6 @@ ADAPTER_MAPPING: Final =    {
                             "netbios over tcpip": "netbios_over_tcpip",
                             "autoconfiguration enabled": "autoconfiguration_enabled",
                         }
+
+LIST_FIELDS: Final =    {"default_gateway","dns_servers",}
+BAD_GATEWAYS: Final =   {"127.0.0.1", "::1",}
