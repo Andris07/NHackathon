@@ -1,29 +1,31 @@
 from pathlib import Path
 
 def convert(n: str) -> str:
+    n = n.strip()
     if "^" in n:
         base, exp = n.split("^")
         n = str(int(base) ** int(exp))
     return n
 
+def mirror(arr):
+    for i in range(len(arr) // 2):
+        arr[-1 - i] = arr[i]
+    return arr
+
 def next_magic_num(n: str) -> str:
     s = list(n)
     
-    def mirror(arr):
-        for i in range(len(arr) // 2):
-            arr[-1 - i] = arr[i]
-        return arr
-    
-    mirrored = "".join(mirror(s))
+    mirrored = "".join(mirror(s.copy()))
     if mirrored > n:
         return mirrored
     
     carry = 1
     i = (len(s) - 1) // 2
+
     while i >= 0 and carry:
-        new = int(s[i]) + carry
-        carry = new // 10
-        s[i] = str(new % 10)
+        total = int(s[i]) + carry
+        carry = total // 10
+        s[i] = str(total % 10)
         i -= 1
 
     if carry:
