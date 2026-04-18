@@ -1,7 +1,7 @@
 from pathlib import Path
+import sys
 from datetime import datetime
 
-from os import sys
 sys.stdout.reconfigure(encoding='utf-8')
 
 DAY = 86400
@@ -9,9 +9,9 @@ HOUR = 3600
 MINUTE = 60
 
 def convert_to_total_seconds(start: str, end: str) -> int:
-    startSeconds = datetime.strptime(start, "%Y-%m-%d %H:%M:%S")
-    endSeconds = datetime.strptime(end, "%Y-%m-%d %H:%M:%S")
-    seconds = int((endSeconds - startSeconds).total_seconds())
+    start_dt = datetime.strptime(start, "%Y-%m-%d %H:%M:%S")
+    end_dt = datetime.strptime(end, "%Y-%m-%d %H:%M:%S")
+    seconds = int((end_dt - start_dt).total_seconds())
 
     return seconds
 
@@ -25,17 +25,17 @@ def parking_fee(start: str, end: str) -> int:
     rest = seconds % DAY
 
     fee = days * 10000
-    freeParking = rest - 30 * MINUTE
+    billable_parking = rest - 30 * MINUTE
 
-    if freeParking <= 0:
+    if billable_parking <= 0:
         return fee
-    if freeParking <= 3 * HOUR:
-        fee += (freeParking + HOUR - 1) // HOUR * 300
+    if billable_parking <= 3 * HOUR:
+        fee += (billable_parking + HOUR - 1) // HOUR * 300
         # fee += (freeParking * 300 + HOUR - 1) // HOUR
         # fee based on minutes for the extra points, the results are also integers
     else:
         fee += 3 * 300
-        fee += ((freeParking - 3 * HOUR) + HOUR - 1) // HOUR * 500
+        fee += ((billable_parking - 3 * HOUR) + HOUR - 1) // HOUR * 500
         # fee += ((freeParking - 3 * HOUR) * 500 + HOUR - 1) // HOUR
         # fee based on minutes for the extra points, the results are also integers
     
