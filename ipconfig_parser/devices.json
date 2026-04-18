@@ -1,14 +1,6 @@
 [
     {
         "file_name": "parser_input_a.txt",
-        "host": {
-            "host_name": "",
-            "primary_dns_suffix": "",
-            "node_type": "",
-            "ip_routing_enabled": "",
-            "wins_proxy_enabled": "",
-            "dns_search_list": ""
-        },
         "adapters": [
             {
                 "adapter_name": "Ethernet adapter Ethernet 2",
@@ -90,14 +82,6 @@
     },
     {
         "file_name": "parser_input_b.txt",
-        "host": {
-            "host_name": "Nebuchadnezzar",
-            "primary_dns_suffix": "",
-            "node_type": "Hybrid",
-            "ip_routing_enabled": "No",
-            "wins_proxy_enabled": "No",
-            "dns_search_list": "babylon.net"
-        },
         "adapters": [
             {
                 "adapter_name": "Ethernet adapter Ethernet 2",

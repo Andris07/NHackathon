@@ -36,7 +36,7 @@ def main():
         filtered_adapters = [filter_adapter(a) for a in parsed["adapters"]]
         filtered_host = filter_host(parsed["host"])
 
-        data.append({"file_name": file.name, "host": filtered_host, "adapters": filtered_adapters})
+        data.append({"file_name": file.name, "adapters": filtered_adapters})
 
     output_file = BASE_DIR / "devices.json"
     export_to_json(data, output_file)
