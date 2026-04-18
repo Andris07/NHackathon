@@ -11,6 +11,9 @@ def normalize_key(key: str, mode: str) -> str:
 def clean_value(value: str) -> str:
     return value.split("(")[0].strip()
 
+def is_multiline_value(line: str) -> bool:
+    return ". . ." not in line and ":" not in line.split(" ")[0]
+
 def _create_adapter(adapter_name: str) -> dict:
     return      {
                 "adapter_name": adapter_name,
@@ -105,6 +108,14 @@ def parse_devices_from_file(file: str) -> dict:
         if current_device is None:
             continue
 
+        # MULTILINE VALUES (DNS, gateway)
+        if current_key and current_key in LIST_FIELDS:
+            if ". . ." not in line:
+                value = clean_value(line)
+                if value and value not in BAD_GATEWAYS:
+                    current_device[current_key].append(value)
+                continue
+
         # KEY : VALUE
         if ":" in line:
             key, value = line.split(":", 1)
@@ -126,11 +137,6 @@ def parse_devices_from_file(file: str) -> dict:
             # NORMAL FIELDS
             current_device[key] = value
             continue
-
-        # MULTILINE VALUES
-        if current_key and current_key in LIST_FIELDS:
-            if line and line not in BAD_GATEWAYS:
-                current_device[current_key].append(clean_value(line))
 
     host = parse_host(host_lines)
     return {"host": host, "adapters": devices}
