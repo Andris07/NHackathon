@@ -4,6 +4,28 @@ import json
 
 sys.stdout.reconfigure(encoding="utf-8")
 ENCODINGS = ["utf-8-sig","utf-8","utf-16","utf-16-le","utf-16-be","cp1250","cp1251","cp1252","cp1254","latin-1","iso-8859-2","iso-8859-1","iso-8859-15","cp850","cp852","cp437","mac_roman","koi8-r","shift_jis","gbk","utf-32"] # most common encodings
+MAPPING =   {
+            "physical address": "physical_address",
+            "ipv4 address": "ipv4_address",
+            "autoconfiguration ipv4 address": "ipv4_address",
+
+            "ipv6 address": "ipv6_address",
+            "temporary ipv6 address": "ipv6_temporary",
+            "link-local ipv6 address": "ipv6_link_local",
+
+            "subnet mask": "subnet_mask",
+            "default gateway": "default_gateway",
+            "dhcp enabled": "dhcp_enabled",
+
+            "dns servers": "dns_servers",
+            "connection-specific dns suffix": "dns_suffix",
+            "dns suffix search list": "dns_search_list",
+
+            "description": "description",
+            }
+
+def get_txt_files(base_dir: Path):
+    return list(base_dir.rglob("*.txt"))
 
 def read_file_safely(path: Path) -> str:
     for enc in ENCODINGS:
@@ -13,34 +35,12 @@ def read_file_safely(path: Path) -> str:
             continue
     return path.read_text(encoding="utf-8", errors="replace")
 
-def get_txt_files(base_dir: Path):
-    return list(base_dir.rglob("*.txt"))
-
 def normalize_key(key: str) -> str:
     key = key.lower().strip()
     key = key.split(".")[0].strip()
     key = " ".join(key.split())
 
-    mapping =                   {
-                                "physical address": "physical_address",
-                                "ipv4 address": "ipv4_address",
-                                "autoconfiguration ipv4 address": "ipv4_address",
-
-                                "ipv6 address": "ipv6_address",
-                                "temporary ipv6 address": "ipv6_temporary",
-                                "link-local ipv6 address": "ipv6_link_local",
-
-                                "subnet mask": "subnet_mask",
-                                "default gateway": "default_gateway",
-                                "dhcp enabled": "dhcp_enabled",
-
-                                "dns servers": "dns_servers",
-                                "connection-specific dns suffix": "dns_suffix",
-                                "dns suffix search list": "dns_search_list",
-
-                                "description": "description",
-                                }
-    return mapping.get(key, key.replace(" ", "_"))
+    return MAPPING.get(key, key.replace(" ", "_"))
 
 ADAPTER_KEY_ORDER =             [
                                 "adapter_name",
@@ -60,6 +60,10 @@ ADAPTER_KEY_ORDER =             [
 
 def sort_adapter_fields(adapter: dict) -> dict:
     return {key: adapter[key] for key in ADAPTER_KEY_ORDER}
+
+def export_to_json(file: Path, adapters):
+    sorted_adapters = [sort_adapter_fields(a) for a in adapters]
+    return { "file_name": file.name, "adapters": sorted_adapters}
 
 def parse_devices_from_file(file: str):
     devices = []
@@ -104,54 +108,44 @@ def parse_devices_from_file(file: str):
             if key.startswith("ipv6_"):
                 current_device[key] = value.split("(")[0].strip()
                 continue
-
             # description
             if key == "description":
                 current_device["description"] = value
                 continue
-
             # physical address
             if key == "physical_address":
                 current_device["physical_address"] = value
                 continue
-
             # dhcp enabled
             if key == "dhcp_enabled":
                 current_device["dhcp_enabled"] = value
                 continue
-
             # ipv4
             if key == "ipv4_address":
                 current_device["ipv4_address"] = value.split("(")[0].strip()
                 continue
-
             # subnet mask
             if key == "subnet_mask":
                 current_device["subnet_mask"] = value
                 continue
-
             # dns suffix
             if key == "dns_suffix":
                 current_device["dns_suffix"] = value
                 continue
-
             # dns search list
             if key == "dns_search_list":
                 current_device["dns_search_list"] = value
                 continue
-
             # default gateway
             if key == "default_gateway":
                 if value and value not in ("127.0.0.1", "::1"):
                     current_device["default_gateway"].append(value)
                 continue
-
             # dns servers
             if key == "dns_servers":
                 if value:
                     current_device["dns_servers"].append(value)
                 continue
-
             continue
 
         # multiline values (default_gateway, dns_servers)
@@ -164,74 +158,22 @@ def parse_devices_from_file(file: str):
             elif current_key == "dns_servers":
                 current_device["dns_servers"].append(line)
                 continue
-
     return devices
-
-def console_print(results):
-    print("[")
-
-    for file_index, file_entry in enumerate(results):
-        print("\t{")
-        print(f'\t\t"file_name": "{file_entry["file_name"]}",')
-        print("\t\t\"adapters\": [")
-
-        adapters = file_entry["adapters"]
-
-        for idx, device in enumerate(adapters):
-            print("\t\t\t{")
-            print(f'\t\t\t\t"adapter_name": "{device["adapter_name"]}",')
-
-            for key in ADAPTER_KEY_ORDER:
-                if key == "adapter_name":
-                    continue
-
-                value = device[key]
-
-                if isinstance(value, list):
-                    if not value:
-                        print(f'\t\t\t\t"{key}": [],')
-                    else:
-                        print(f'\t\t\t\t"{key}": [')
-                        for item in value:
-                            print(f'\t\t\t\t\t"{item}",')
-                        print("\t\t\t\t],")
-                else:
-                    print(f'\t\t\t\t"{key}": "{value}",')
-
-            if idx < len(adapters) - 1:
-                print("\t\t\t},")
-            else:
-                print("\t\t\t}")
-
-        print("\t\t]")
-
-        if file_index < len(results) - 1:
-            print("\t},")
-        else:
-            print("\t}")
-
-    print("]")
-
-def export_to_json(file: Path, adapters):
-    sorted_adapters = [sort_adapter_fields(a) for a in adapters]
-    return { "file_name": file.name, "adapters": sorted_adapters}
 
 def main():
     BASE_DIR = Path(__file__).resolve().parent
+
     files = get_txt_files(BASE_DIR)
     results = []
 
     for file in files:
         data = read_file_safely(file)
-
         adapters = parse_devices_from_file(data)
-
         results.append(export_to_json(file, adapters))
-
-        console_print(results)
 
     with open(BASE_DIR / "adapters.json", "w", encoding="utf-8") as f:
         json.dump(results, f, indent=4, ensure_ascii=False)
+        print(json.dumps(results, indent=4, ensure_ascii=False))
 
 if __name__ == "__main__":
     main()
