@@ -1,19 +1,19 @@
 from pathlib import Path
 
 def min_num_of_drops(N: int, H: int) -> int:
-    if (H == 0):
+    if H == 0:
         return 0
-    elif (N == 1):
+    if N == 1:
         return H
 
     K = 0
-    drops = [0] * (N + 1)
+    max_floors = [0] * (N + 1)
 
-    while drops[N] < H + 1:
+    while max_floors[N] < H:
         K += 1
 
         for n in range(N, 0, -1):
-            drops[n] = drops[n] + drops[n - 1] + 1
+            max_floors[n] = max_floors[n] + max_floors[n - 1] + 1
     return K
 
 def main():
