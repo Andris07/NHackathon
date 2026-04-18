@@ -8,8 +8,13 @@ def normalize_key(key: str, mode: str) -> str:
     mapping = HOST_MAPPING if mode == "host" else ADAPTER_MAPPING
     return mapping.get(key, key.replace(" ", "_"))
 
-def clean_value(value: str) -> str:
-    return value.split("(")[0].strip()
+def clean_value(value: str, key: str | None = None) -> str:
+    value = value.strip()
+
+    if key and key.startswith(("ipv4", "ipv6")):
+        value = value.split("(")[0].strip()
+
+    return value
 
 def is_multiline_value(line: str) -> bool:
     return ". . ." not in line and ":" not in line.split(" ")[0]
@@ -64,7 +69,7 @@ def parse_host(host_lines: list[str]) -> dict:
 
         key, value = line.split(":", 1)
         key = normalize_key(key, "host")
-        value = clean_value(value)
+        value = clean_value(value, key)
 
         if key in host:
             host[key] = value
@@ -111,7 +116,7 @@ def parse_devices_from_file(file: str) -> dict:
         # MULTILINE VALUES (DNS, gateway)
         if current_key and current_key in LIST_FIELDS:
             if ". . ." not in line:
-                value = clean_value(line)
+                value = clean_value(line, current_key)
                 if value and value not in BAD_GATEWAYS:
                     current_device[current_key].append(value)
                 continue
@@ -120,7 +125,7 @@ def parse_devices_from_file(file: str) -> dict:
         if ":" in line:
             key, value = line.split(":", 1)
             key = normalize_key(key, "adapter")
-            value = clean_value(value)
+            value = clean_value(value, key)
             current_key = key
 
             # LIST FIELDS
