@@ -1,7 +1,6 @@
 from typing import Final
 
-ENCODINGS: Final =          ("utf-8-sig","utf-8","utf-16","utf-16-le","utf-16-be","cp1250","cp1251","cp1252","cp1254","latin-1","iso-8859-2","iso-8859-1","iso-8859-15","cp850","cp852","cp437","mac_roman","koi8-r","shift_jis","gbk","utf-32",)
-                            # most common encodings
+ENCODINGS: Final =          ("utf-8-sig","utf-8","utf-16","utf-16-le","utf-16-be","cp1250","cp1251","cp1252","cp1254","latin-1","iso-8859-2","iso-8859-1","iso-8859-15","cp850","cp852","cp437","mac_roman","koi8-r","shift_jis","gbk","utf-32",) # most common encodings
 
 HOST_MAPPING: Final =       {
                             "host name": "host_name",
@@ -37,7 +36,6 @@ ADAPTER_MAPPING: Final =    {
                             # DNS
                             "dns servers": "dns_servers",
                             "connection-specific dns suffix": "dns_suffix",
-                            "dns suffix search list": "dns_search_list",
 
                             # DEVICE INFO
                             "description": "description",

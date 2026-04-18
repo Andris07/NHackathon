@@ -34,7 +34,6 @@ def _create_adapter(adapter_name: str) -> dict:
 
                 "dns_servers": [],
                 "dns_suffix": "",
-                "dns_search_list": "",
 
                 "dhcpv6_iaid": "",
                 "dhcpv6_duid": "",
@@ -70,24 +69,27 @@ def parse_host(host_lines: list[str]) -> dict:
     return host
 
 def parse_devices_from_file(file: str) -> dict:
-    devices = []
-    host_lines = []
+    devices: list[dict] = []
+    host_lines: list[str] = []
 
-    current_device = None
-    current_key = None
+    current_device: dict | None = None
+    current_key: str | None = None
+    host_finished = False
 
-    for line in file.splitlines():
-        line = line.strip()
+    for raw_line in file.splitlines():
+        line = raw_line.strip()
 
         if not line:
             continue
 
-        # HEADER
         if "windows ip configuration" in line.lower():
+            current_device = None
             continue
 
         # ADAPTERS
-        if line.endswith(":") and "adapter" in line.lower():
+        if line.lower().endswith(":") and "adapter" in line.lower():
+            host_finished = True
+
             adapter_name = line.rsplit(":", 1)[0].strip()
             current_device = _create_adapter(adapter_name)
             devices.append(current_device)
@@ -95,8 +97,12 @@ def parse_devices_from_file(file: str) -> dict:
             continue
 
         # HOSTS
+        if current_device is None and not host_finished:
+            if ":" in line:
+                host_lines.append(line)
+            continue
+
         if current_device is None:
-            host_lines.append(line)
             continue
 
         # KEY : VALUE
@@ -114,7 +120,7 @@ def parse_devices_from_file(file: str) -> dict:
 
             # IPV6 FIELDS
             if key.startswith("ipv6_"):
-                current_device[key] = clean_value(value)
+                current_device[key] = value
                 continue
 
             # NORMAL FIELDS
@@ -122,9 +128,9 @@ def parse_devices_from_file(file: str) -> dict:
             continue
 
         # MULTILINE VALUES
-        if current_key in LIST_FIELDS:
+        if current_key and current_key in LIST_FIELDS:
             if line and line not in BAD_GATEWAYS:
-                current_device[current_key].append(line)
+                current_device[current_key].append(clean_value(line))
 
     host = parse_host(host_lines)
-    return {"host": host, "adapters": devices,}
+    return {"host": host, "adapters": devices}
