@@ -31,12 +31,12 @@ def parking_fee(start: str, end: str) -> int:
         return fee
     if billable_parking <= 3 * HOUR:
         fee += (billable_parking + HOUR - 1) // HOUR * 300
-        # fee += (freeParking * 300 + HOUR - 1) // HOUR
+        # fee += (billable_parking * 300 + HOUR - 1) // HOUR
         # fee based on minutes for the extra points, the results are also integers
     else:
         fee += 3 * 300
         fee += ((billable_parking - 3 * HOUR) + HOUR - 1) // HOUR * 500
-        # fee += ((freeParking - 3 * HOUR) * 500 + HOUR - 1) // HOUR
+        # fee += ((billable_parking - 3 * HOUR) * 500 + HOUR - 1) // HOUR
         # fee based on minutes for the extra points, the results are also integers
     
     return fee
