@@ -21,7 +21,7 @@ def read_file_safely(path: Path) -> str:
 
 def export_to_json(data, output_path: Path):
     with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
+        json.dump(data, f, indent=2, ensure_ascii=False)
 
 def main():
     BASE_DIR = Path(__file__).resolve().parent
@@ -41,7 +41,7 @@ def main():
     output_file = BASE_DIR / "devices.json"
     export_to_json(data, output_file)
 
-    print(json.dumps(data, indent=4, ensure_ascii=False))
+    print(json.dumps(data, indent=2, ensure_ascii=False))
 
 if __name__ == "__main__":
     main()
