@@ -26,7 +26,7 @@ def export_to_json(data, output_path: Path):
 def main():
     BASE_DIR = Path(__file__).resolve().parent
 
-    files = get_txt_files(BASE_DIR)
+    files = sorted(get_txt_files(BASE_DIR), key=lambda f: f.name)
     data = []
 
     for file in files:
