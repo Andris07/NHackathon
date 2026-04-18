@@ -167,15 +167,50 @@ def parse_devices_from_file(file: str):
 
     return devices
 
-def console_print(devices):
-    for device in devices:
-        print(f"\n{device['adapter_name']}")
-        print("-" * len(device["adapter_name"]))
+def console_print(results):
+    print("[")
 
-        for k, v in device.items():
-            if k == "adapter_name":
-                continue
-            print(f"{k:<20} │ {v}")
+    for file_index, file_entry in enumerate(results):
+        print("\t{")
+        print(f'\t\t"file_name": "{file_entry["file_name"]}",')
+        print("\t\t\"adapters\": [")
+
+        adapters = file_entry["adapters"]
+
+        for idx, device in enumerate(adapters):
+            print("\t\t\t{")
+            print(f'\t\t\t\t"adapter_name": "{device["adapter_name"]}",')
+
+            for key in ADAPTER_KEY_ORDER:
+                if key == "adapter_name":
+                    continue
+
+                value = device[key]
+
+                if isinstance(value, list):
+                    if not value:
+                        print(f'\t\t\t\t"{key}": [],')
+                    else:
+                        print(f'\t\t\t\t"{key}": [')
+                        for item in value:
+                            print(f'\t\t\t\t\t"{item}",')
+                        print("\t\t\t\t],")
+                else:
+                    print(f'\t\t\t\t"{key}": "{value}",')
+
+            if idx < len(adapters) - 1:
+                print("\t\t\t},")
+            else:
+                print("\t\t\t}")
+
+        print("\t\t]")
+
+        if file_index < len(results) - 1:
+            print("\t},")
+        else:
+            print("\t}")
+
+    print("]")
 
 def export_to_json(file: Path, adapters):
     sorted_adapters = [sort_adapter_fields(a) for a in adapters]
@@ -193,8 +228,7 @@ def main():
 
         results.append(export_to_json(file, adapters))
 
-        print(f"{file.name}")
-        console_print(adapters)
+        console_print(results)
 
     with open(BASE_DIR / "adapters.json", "w", encoding="utf-8") as f:
         json.dump(results, f, indent=4, ensure_ascii=False)
