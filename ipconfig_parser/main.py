@@ -8,6 +8,8 @@ from filterFields import filter_adapter, filter_host
 
 sys.stdout.reconfigure(encoding="utf-8")
 
+INCLUDE_HOST = False   # SWITCH
+
 def get_txt_files(base_dir: Path):
     return list(base_dir.rglob("*.txt"))
 
@@ -34,9 +36,13 @@ def main():
         parsed = parse_devices_from_file(file_content)
 
         filtered_adapters = [filter_adapter(a) for a in parsed["adapters"]]
-        filtered_host = filter_host(parsed["host"])
 
-        data.append({"file_name": file.name, "adapters": filtered_adapters})
+        entry = {"file_name": file.name, "adapters": filtered_adapters}
+
+        if INCLUDE_HOST:
+            entry["host"] = filter_host(parsed["host"])
+
+        data.append(entry)
 
     output_file = BASE_DIR / "devices.json"
     export_to_json(data, output_file)
