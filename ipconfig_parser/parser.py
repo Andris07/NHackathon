@@ -16,9 +16,6 @@ def clean_value(value: str, key: str | None = None) -> str:
 
     return value
 
-def is_multiline_value(line: str) -> bool:
-    return ". . ." not in line and ":" not in line.split(" ")[0]
-
 def _create_adapter(adapter_name: str) -> dict:
     return      {
                 "adapter_name": adapter_name,
