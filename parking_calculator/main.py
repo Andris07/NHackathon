@@ -8,6 +8,13 @@ DAY = 86400
 HOUR = 3600
 MINUTE = 60
 
+FREE_PERIOD = 30 * MINUTE
+FIRST_PERIOD = 3 * HOUR
+
+FIRST_RATE = 300
+SECOND_RATE = 500
+DAY_RATE = 10000
+
 def convert_to_total_seconds(start: str, end: str) -> int:
     start_dt = datetime.strptime(start, "%Y-%m-%d %H:%M:%S")
     end_dt = datetime.strptime(end, "%Y-%m-%d %H:%M:%S")
@@ -24,19 +31,19 @@ def parking_fee(start: str, end: str) -> int:
     days = seconds // DAY
     rest = seconds % DAY
 
-    fee = days * 10000
-    billable_parking = rest - 30 * MINUTE
+    fee = days * DAY_RATE
+    billable_parking = rest - FREE_PERIOD
 
     if billable_parking <= 0:
         return fee
-    if billable_parking <= 3 * HOUR:
-        fee += (billable_parking + HOUR - 1) // HOUR * 300
-        # fee += (billable_parking * 300 + HOUR - 1) // HOUR
+    if billable_parking <= FIRST_PERIOD:
+        fee += (billable_parking + HOUR - 1) // HOUR * FIRST_RATE
+        # fee += (billable_parking * FIRST_RATE + HOUR - 1) // HOUR
         # fee based on minutes for the extra points, the results are also integers
     else:
-        fee += 3 * 300
-        fee += ((billable_parking - 3 * HOUR) + HOUR - 1) // HOUR * 500
-        # fee += ((billable_parking - 3 * HOUR) * 500 + HOUR - 1) // HOUR
+        fee += (FIRST_PERIOD // HOUR) * FIRST_RATE
+        fee += ((billable_parking - FIRST_PERIOD) + HOUR - 1) // HOUR * SECOND_RATE
+        # fee += ((billable_parking - FIRST_PERIOD) * SECOND_RATE + HOUR - 1) // HOUR
         # fee based on minutes for the extra points, the results are also integers
     
     return fee
